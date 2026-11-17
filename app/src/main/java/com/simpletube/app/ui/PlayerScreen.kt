@@ -1,6 +1,6 @@
 package com.simpletube.app.ui
 
-import android.net.Uri
+import androidx.media3.common.MediaItem
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,16 +65,16 @@ fun PlayerScreen(video: VideoItem, onBack: () -> Unit) {
                 val factory = DefaultDataSource.Factory(context)
                 val mediaSource: MediaSource = when (source) {
                     is PlaySource.Hls -> HlsMediaSource.Factory(factory)
-                        .createMediaSource(Uri.parse(source.url))
+                        .createMediaSource(MediaItem.fromUri(source.url))
 
                     is PlaySource.Progressive -> ProgressiveMediaSource.Factory(factory)
-                        .createMediaSource(Uri.parse(source.url))
+                        .createMediaSource(MediaItem.fromUri(source.url))
 
                     is PlaySource.Merged -> MergingMediaSource(
                         ProgressiveMediaSource.Factory(factory)
-                            .createMediaSource(Uri.parse(source.videoUrl)),
+                            .createMediaSource(MediaItem.fromUri(source.videoUrl)),
                         ProgressiveMediaSource.Factory(factory)
-                            .createMediaSource(Uri.parse(source.audioUrl))
+                            .createMediaSource(MediaItem.fromUri(source.audioUrl))
                     )
                 }
                 player.setMediaSource(mediaSource)
