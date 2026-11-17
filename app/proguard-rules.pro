@@ -32,3 +32,11 @@
 -dontwarn kotlinx.coroutines.**
 -keepclassmembers class kotlinx.coroutines.** { volatile <fields>; }
 -keepclassmembers class kotlin.coroutines.jvm.internal.DebugMetadataKt { *; }
+
+# ---------- Clases del JDK no presentes en Android (Rhino/Nashorn) ----------
+-dontwarn java.beans.**
+-dontwarn javax.script.**
+-dontwarn java.sql.**
+-dontwarn javax.xml.**
+-dontwarn org.w3c.dom.**
+-dontwarn org.mozilla.javascript.**
