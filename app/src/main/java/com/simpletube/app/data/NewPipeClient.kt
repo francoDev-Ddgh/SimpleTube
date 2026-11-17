@@ -104,8 +104,10 @@ object NewPipeClient {
             .filter { it.isUrl && it.height > 0 }
             .maxWithOrNull(compareBy<VideoStream> { it.height }.thenBy { it.bitrate })
 
-        if (video != null && audio != null) {
-            return@withContext PlaySource.Merged(video.url, audio.url)
+        val videoUrl = video?.url
+        val audioUrl = audio?.url
+        if (videoUrl != null && audioUrl != null) {
+            return@withContext PlaySource.Merged(videoUrl, audioUrl)
         }
 
         // 3) Fallback: stream progresivo muxeado
@@ -113,8 +115,9 @@ object NewPipeClient {
             .filter { it.isUrl }
             .maxWithOrNull(compareBy<VideoStream> { it.height }.thenBy { it.bitrate })
 
-        if (muxed != null) {
-            return@withContext PlaySource.Progressive(muxed.url)
+        val muxedUrl = muxed?.url
+        if (muxedUrl != null) {
+            return@withContext PlaySource.Progressive(muxedUrl)
         }
 
         throw IllegalStateException("No hay streams reproducibles para este video")
