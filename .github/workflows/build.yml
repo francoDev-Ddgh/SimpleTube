@@ -17,6 +17,9 @@ jobs:
     name: Build release APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,13 +30,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install SDK packages
+      - name: Prepare Android SDK
         run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0" > /dev/null
+          SDKMANAGER=""
+          for c in "$(command -v sdkmanager || true)" "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "$ANDROID_HOME/cmdline-tools/"*/bin/sdkmanager; do
+            if [ -n "$c" ] && [ -x "$c" ]; then SDKMANAGER="$c"; break; fi
+          done
+          echo "sdkmanager = $SDKMANAGER"
+          "$SDKMANAGER" --version || true
+          mkdir -p "$ANDROID_HOME/licenses"
+          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
+          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
@@ -66,9 +75,8 @@ jobs:
           tag_name: v1.0.0-build${{ github.run_number }}
           name: SimpleTube v1.0.0 (build ${{ github.run_number }})
           body: |
-            APK **release sin firmar** (unsigned) generado con R8 agresivo.
-            Para instalarlo en el dispositivo hay que firmarlo antes:
-            `apksigner sign --ks debug.keystore SimpleTube-release.apk`
+            APK **release sin firmar** (unsigned) compilado con R8 agresivo.
+            Para instalarlo en un dispositivo hay que firmarlo antes con apksigner.
           files: dist/SimpleTube-release.apk
           fail_on_unmatched_files: true
         env:
